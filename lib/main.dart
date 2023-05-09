@@ -15,11 +15,10 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Flutter Demo',
       theme: ThemeData(
-
         // is not restarted.
         primarySwatch: Colors.blue,
       ),
-      home: const MianScreen(), 
+      home: const MianScreen(),
     );
   }
 }
@@ -33,8 +32,7 @@ class MianScreen extends StatelessWidget {
       body: SizedBox(
         width: double.infinity,
         child: Column(
-          
-          crossAxisAlignment:  CrossAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             ElevatedButton(

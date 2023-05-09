@@ -31,13 +31,33 @@ class PolylineAnimationPageState extends State<PolylineAnimationPage>
 
   List<LatLng> polylineCoordinates = [];
   List<LatLng> _route = [];
+  final waypointList = const [
+    LatLng(13.018715, 80.261715),
+    LatLng(13.018715, 80.261715),
+    LatLng(12.9702603, 80.1513776),
+    LatLng(12.9702603, 80.1513776),
+  ];
 
-  void getPolyPoints() {
+  void getPolyPoints() async {
     dev.log('started getpolypoints');
     PolylinePoints polylinePoints = PolylinePoints();
 
     /// from string
     List<PointLatLng> lines = polylinePoints.decodePolyline(newPoints);
+    final a = await polylinePoints.getRouteBetweenCoordinates(
+        'AIzaSyAXl2s7Nsv3uAczGYOeZvXiELPgqe8FLcc',
+        const PointLatLng(13.0102061, 80.2373687),
+        const PointLatLng(13.030168, 80.276943),
+        optimizeWaypoints: true,
+        wayPoints: waypointList
+            .map((e) => PolylineWayPoint(
+                stopOver: true, location: "${e.latitude},${e.longitude}"))
+            .toList());
+    List<int> order = a.waypointOrder;
+
+    dev.log(order.toString());
+    dev.log("+++++++++++++++");
+    dev.log(a.waypointOrder.toString());
 
     if (lines.isNotEmpty) {
       for (var point in lines) {
@@ -45,11 +65,21 @@ class PolylineAnimationPageState extends State<PolylineAnimationPage>
           LatLng(point.latitude, point.longitude),
         );
       }
-      // dev.log(polylineCoordinates.toString());
       setState(() {});
     }
-
+    reorderLatLngList(polylineCoordinates, order);
     dev.log('completed getpolypoints');
+  }
+
+  List<LatLng> reorderLatLngList(List<LatLng> latLngList, List<int> orderList) {
+    dev.log('inn');
+    List<LatLng> reorderedList = [];
+    for (int i = 0; i < orderList.length; i++) {
+      int index = orderList[i];
+      reorderedList.add(latLngList[index]);
+      dev.log(reorderedList.length.toString());
+    }
+    return reorderedList;
   }
 
   LocationData? currentLocation;
@@ -57,28 +87,37 @@ class PolylineAnimationPageState extends State<PolylineAnimationPage>
   @override
   void initState() {
     getPolyPoints();
-
     _acontroller = AnimationController(
       duration: const Duration(seconds: 5),
       vsync: this,
     );
+    animatePolyline();
+    super.initState();
+  }
 
-    animatepoly = Tween(begin: 0.0, end: polylineCoordinates.length.toDouble())
-        .animate(_acontroller)
+  animatePolyline() {
+    final end = polylineCoordinates.length.toDouble() - 1;
+    if (end < 1) {
+      return;
+    }
+
+    animatepoly = Tween(begin: 0.0, end: end).animate(_acontroller)
       ..addListener(() {
         if (_acontroller.isCompleted) {
           _acontroller.repeat();
         }
-        // Calculate the index of the current point based on the animation value
+// Calculate the index of the current point based on the animation value
         int index = animatepoly.value.toInt();
-
-        // Create a sublist of points up to the current index
+// Create a sublist of points up to the current index
         _route = polylineCoordinates.sublist(0, index + 1);
       });
-
     _acontroller.forward();
+  }
 
-    super.initState();
+  @override
+  void dispose() {
+    _acontroller.dispose();
+    super.dispose();
   }
 
   @override
