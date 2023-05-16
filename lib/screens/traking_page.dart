@@ -36,13 +36,27 @@ class OrderTrackingPageState extends State<OrderTrackingPage>
   Stream<List<Marker>> get mapMarkerStream => _mapMarkerSC.stream;
 
   List<LatLng> polylineCoordinates = [];
-  void setCustomMarkerIcon() {
-    BitmapDescriptor.fromAssetImage(ImageConfiguration.empty, "assets/sb1.png")
-        .then(
-      (icon) {
-        currentLocationIcon = icon;
-      },
-    );
+  BitmapDescriptor? destinationIcon;
+  BitmapDescriptor? sourceIcon;
+
+  Future<BitmapDescriptor> setDestMarkerIcon() async {
+    final destIcon = await BitmapDescriptor.fromAssetImage(
+        const ImageConfiguration(size: Size(200, 100)), "assets/school.png");
+    return destIcon;
+  }
+
+  Future<BitmapDescriptor> setSourceMarkerIcon() async {
+    final destIcon = await BitmapDescriptor.fromAssetImage(
+        const ImageConfiguration(size: Size(200, 100)), "assets/bus.png");
+    return destIcon;
+  }
+
+  void loadDestIcon() async {
+    destinationIcon = await setDestMarkerIcon();
+  }
+
+  void loadSourceIcon() async {
+    sourceIcon = await setSourceMarkerIcon();
   }
 
   void getPolyPoints() async {
@@ -100,11 +114,18 @@ class OrderTrackingPageState extends State<OrderTrackingPage>
     );
   }
 
+  Set<Marker> childMarkers = {};
+
   @override
   void initState() {
+    buildMarkers(waypointList).then((value) {
+      childMarkers = value;
+      setState(() {});
+    });
     getPolyPoints();
     getCurrentLocation();
-    setCustomMarkerIcon();
+    loadDestIcon();
+    loadSourceIcon();
     super.initState();
   }
 
@@ -115,16 +136,16 @@ class OrderTrackingPageState extends State<OrderTrackingPage>
           stream: mapMarkerStream,
           builder: (context, snapshot) {
             Set<Marker> markers = {
-              const Marker(
-                markerId: MarkerId("source"),
-                position: orginLatLng,
-              ),
+              Marker(
+                  markerId: const MarkerId("source"),
+                  position: orginLatLng,
+                  icon: destinationIcon ?? BitmapDescriptor.defaultMarker),
               Marker(
                   markerId: const MarkerId("destination"),
                   position: destination,
-                  icon: currentLocationIcon),
+                  icon: sourceIcon ?? BitmapDescriptor.defaultMarker),
             };
-            final waypointMarkers = buildMarkers(waypointList);
+            // final waypointMarkers = buildMarkers(waypointList);
             return GoogleMap(
               initialCameraPosition: const CameraPosition(
                 tilt: 90,
@@ -140,7 +161,7 @@ class OrderTrackingPageState extends State<OrderTrackingPage>
                 ),
               },
               markers: {
-                ...waypointMarkers,
+                ...childMarkers,
                 ...markers,
                 ...Set<Marker>.of(snapshot.data ?? [])
               },
@@ -312,13 +333,15 @@ const newPoints =
     "o_lnAokvhN\\CJu@j@?AGLsAg@KAAAAZyEa@ECE?E?[XwCgB@_DF?UxA?|CE|EBdDJbAHfBLLu@PgC@q@@sFFe@AoIKoO@wB?a@EeEEiEAiDBwAB]f@uE@}FK_E?aBAmHCgAIu@[mAs@qAKM_@_@m@e@mB{@_@Km@Ge@CqEAeACuAA}EAoSUmBKk@KkAa@iAo@}CeBwC_B}AeAy@g@[]k@e@gBaBoAsA_@We@S?]DMLM|FZLX^fD@h@GLIJGDSDgA_A{B{BYYc@UQGAUBMPUnGXpBDqBECZ^fD@h@GLIJGDSDgA_A{B{BYYc@UQGAUBMPU|FZKeBQkC?m@bAmF~Cx@FBGC_Dy@TmBCkAUaCK_@Ye@cCeDwAkBqBoC{@t@aDnC}BrBw@x@s@u@ECOGQIh@_CgA{@zAoAp@q@v@s@xCyBSW{@qAa@m@qIeMk@aA}BgCSK{E_BDQfBh@vBt@\\PnBbCJPEJKM}BgCSK{E_B}FsBk@UvA{Cp@_Bt@Jv@\\w@]u@Kq@~AwAzCeAa@{DiABMzDjAfA`@EJeAa@{DiABMRyALaAPqAL_AHeCBk@Cj@IdC_@pCa@zCCLUOECkDu@kAUa@K@Q";
 const newPointss = "etonA_~}hNBMNiABOHk@BUFa@D_@@E@I@ODQBW@E@e@@G@e@Bq@@]@M";
 
-Set<Marker> buildMarkers(List<LatLng> waypointList) {
+Future<Set<Marker>> buildMarkers(List<LatLng> waypointList) async {
   final Set<Marker> markers = {};
   int c = 1;
+  final bitmapIcon = await BitmapDescriptor.fromAssetImage(
+      const ImageConfiguration(size: Size(100, 100)), 'assets/child.png');
   for (var point in waypointList) {
     markers.add(Marker(
       markerId: MarkerId("destination-$c"),
-      icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueYellow),
+      icon: bitmapIcon,
       position: point,
     ));
     c++;
