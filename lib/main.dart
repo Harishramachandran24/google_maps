@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_maps/screens/phone_auth.dart';
 import 'package:google_maps/screens/polyline_animation.dart';
 import 'package:google_maps/screens/traking_page.dart';
 
@@ -52,7 +53,16 @@ class MianScreen extends StatelessWidget {
                         builder: (context) => const PolylineAnimationPage(),
                       ));
                 },
-                child: const Text('animated'))
+                child: const Text('animated')),
+            ElevatedButton(
+                onPressed: () {
+                  Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const PhoneAuthScreen(),
+                      ));
+                },
+                child: const Text('Login')),
           ],
         ),
       ),

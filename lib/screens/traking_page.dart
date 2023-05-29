@@ -96,6 +96,7 @@ class OrderTrackingPageState extends State<OrderTrackingPage>
     location.onLocationChanged.listen(
       (newLoc) {
         dev.log('onListner');
+        removeCrossedPolylinePoints();
         currentLocation = newLoc;
         travelled.add(LatLng(newLoc.latitude!, newLoc.longitude!));
         travelled.removeAt(0);
@@ -108,10 +109,24 @@ class OrderTrackingPageState extends State<OrderTrackingPage>
           _mapMarkerSink,
           this,
         );
-
         // setState(() {});
       },
     );
+  }
+
+  void removeCrossedPolylinePoints() {
+    if (polylineCoordinates.isNotEmpty) {
+      // Find the index of the last crossed point
+      int index = polylineCoordinates.indexWhere((point) {
+        return point.latitude == travelled[0].latitude &&
+            point.longitude == travelled[0].longitude;
+      });
+
+      // Remove the crossed points from the polylineCoordinates list
+      if (index >= 0) {
+        polylineCoordinates.removeRange(0, index + 1);
+      }
+    }
   }
 
   Set<Marker> childMarkers = {};
