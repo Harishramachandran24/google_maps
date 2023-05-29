@@ -96,9 +96,9 @@ class OrderTrackingPageState extends State<OrderTrackingPage>
     location.onLocationChanged.listen(
       (newLoc) {
         dev.log('onListner');
-        removeCrossedPolylinePoints();
         currentLocation = newLoc;
         travelled.add(LatLng(newLoc.latitude!, newLoc.longitude!));
+        removeCrossedPolylinePoints();
         travelled.removeAt(0);
         dev.log(travelled.toString());
         animateCar(
@@ -109,7 +109,7 @@ class OrderTrackingPageState extends State<OrderTrackingPage>
           _mapMarkerSink,
           this,
         );
-        // setState(() {});
+        // setState(() {});ll
       },
     );
   }
@@ -118,12 +118,20 @@ class OrderTrackingPageState extends State<OrderTrackingPage>
     if (polylineCoordinates.isNotEmpty) {
       // Find the index of the last crossed point
       int index = polylineCoordinates.indexWhere((point) {
-        return point.latitude == travelled[0].latitude &&
-            point.longitude == travelled[0].longitude;
+        // dev.log(
+        //     "{point.latitude ${point.latitude} , travelled[0].latitude ${travelled[0].latitude}");
+        return point.latitude.toStringAsFixed(4) ==
+                travelled[0].latitude.toStringAsFixed(4) &&
+            point.longitude.toStringAsFixed(4) ==
+                travelled[0].longitude.toStringAsFixed(4);
       });
 
       // Remove the crossed points from the polylineCoordinates list
       if (index >= 0) {
+        final point = polylineCoordinates[index];
+        dev.log('from remove $index'
+            "{point.latitude ${point.latitude.toStringAsFixed(3)} , travelled[0].latitude ${travelled[0].latitude.toStringAsFixed(3)} "
+            '{point.longitude ${point.longitude.toStringAsFixed(3)} , travelled[0].longitude ${travelled[0].longitude}');
         polylineCoordinates.removeRange(0, index + 1);
       }
     }
